@@ -7,7 +7,13 @@ using System.Threading.Tasks;
 
 namespace SteamUserOperator
 {
-    public class SteamInfoRedis
+    public interface ISteamInfoRedis
+    {
+        Task<List<SteamUser>> GetSteamUsers(List<long> steamIds);
+        Task SetSteamUsers(List<SteamUser> steamUsers);
+    }
+
+    public class SteamInfoRedis : ISteamInfoRedis
     {
         private readonly ILogger<SteamInfoRedis> _logger;
 
@@ -24,13 +30,23 @@ namespace SteamUserOperator
             var apikey = configuration.GetValue<string>("REDIS_URI");
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Looks for entries with the given steamIds in the redis cache, and returns a list of all that were found.
         /// </summary>
         /// <param name="steamIds"></param>
         /// <returns></returns>
         public async Task<List<SteamUser>> GetSteamUsers(List<long> steamIds)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Inserts given users into the redis cache.
+        /// </summary>
+        /// <param name=""></param>
+        /// <returns></returns>
+        public async Task SetSteamUsers(List<SteamUser> steamUsers)
         {
             throw new NotImplementedException();
         }

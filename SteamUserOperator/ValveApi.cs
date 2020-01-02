@@ -7,12 +7,18 @@ using System.Threading.Tasks;
 
 namespace SteamUserOperator
 {
+    public interface IValveApi
+    {
+        Task<SteamUser> QueryUser(long steamId);
+        Task<List<SteamUser>> QueryUsers(List<long> steamIds);
+    }
+
     /// <summary>
     /// Communicates with Valve's data api.
     /// 
     /// Requires environment variables: ["VALVE_API_KEY"]
     /// </summary>
-    public class ValveApi
+    public class ValveApi : IValveApi
     {
         private readonly ILogger<ValveApi> _logger;
 
@@ -20,9 +26,9 @@ namespace SteamUserOperator
 
         public ValveApi(ILogger<ValveApi> logger, IConfiguration configuration)
         {
-                _logger = logger;
-                var apikey = configuration.GetValue<string>("VALVE_API_KEY");
-                throw new NotImplementedException();
+            _logger = logger;
+            var apikey = configuration.GetValue<string>("VALVE_API_KEY");
+            throw new NotImplementedException();
         }
 
         /// <summary>
