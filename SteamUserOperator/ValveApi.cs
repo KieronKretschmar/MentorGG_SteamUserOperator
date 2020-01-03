@@ -26,8 +26,9 @@ namespace SteamUserOperator
         private HttpClient Client { get; }
         private readonly string apiKey;
         private const int MAXSTEAMIDSPERQUERY = 100;
-
-        public static int CallsThisDay { get; set; }
+        private const int MAXDAILYAPICALLS = 100000;
+        private static int thisDay { get; set; } = DateTime.Now.Day;
+        private static int callsThisDay { get; set; } = 0;
 
         public ValveApi(ILogger<ValveApi> logger, IConfiguration configuration)
         {
@@ -81,6 +82,7 @@ namespace SteamUserOperator
                 // Query Api
                 var queryUrl = $"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={apiKey}&steamids={String.Join(',', steamIds)}";
                 var response = await Client.GetAsync(queryUrl);
+                CountApiCall();
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -109,6 +111,36 @@ namespace SteamUserOperator
                     _logger.LogError(e, $"Could not parse response from Valve Api. Json: {json}");
                     throw;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Increments the number of Api calls by one, resets them if a new day started, and logs related information.
+        /// </summary>
+        private void CountApiCall()
+        {
+            callsThisDay++;
+
+            // Log if limit is reached
+            if (callsThisDay >= MAXDAILYAPICALLS)
+            {
+                _logger.LogError($"Reached limit for api calls {callsThisDay}/{MAXDAILYAPICALLS} at {24 - DateTime.Now.Hour} hours left today.");
+            }
+            
+            // If this is the first call of a new day, update thisDay and log last days' calls.
+            if (DateTime.Now.Day != thisDay)
+            {
+                var msg = $"The Steam Api was called {callsThisDay}/{MAXDAILYAPICALLS} times today.";
+                _logger.LogInformation(msg);
+
+                // Also log as warning if close to limit
+                if((double) callsThisDay / MAXDAILYAPICALLS > 0.75)
+                {
+                    _logger.LogWarning(msg);
+                }
+
+                thisDay = DateTime.Now.Day;
+                callsThisDay = 0;
             }
         }
     }
