@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +18,9 @@ namespace SteamUserOperator
     public class SteamInfoRedis : ISteamInfoRedis
     {
         private readonly ILogger<SteamInfoRedis> _logger;
+        private static string redisUri;
+        private readonly TimeSpan exipreAfter = TimeSpan.FromDays(14);
+        private IDatabase cache = lazyConnection.Value.GetDatabase();
 
         /// <summary>
         /// Communicates with the redis cache for SteamUsers.
@@ -27,9 +32,11 @@ namespace SteamUserOperator
         public SteamInfoRedis(ILogger<SteamInfoRedis> logger, IConfiguration configuration)
         {
             _logger = logger;
-            var apikey = configuration.GetValue<string>("REDIS_URI");
+            redisUri = configuration.GetValue<string>("REDIS_URI");
+
             throw new NotImplementedException();
         }
+
 
         /// <summary>
         /// Looks for entries with the given steamIds in the redis cache, and returns a list of all that were found.
@@ -48,8 +55,38 @@ namespace SteamUserOperator
         /// <returns></returns>
         public async Task SetSteamUsers(List<SteamUser> steamUsers)
         {
-            throw new NotImplementedException();
+            foreach (var user in steamUsers)
+            {
+                var key = user.SteamId.ToString();
+                var value = JsonConvert.SerializeObject(user);
+                if(!cache.StringSet(key, value, expiry: exipreAfter))
+                {
+                    _logger.LogError($"Could not set redis entry for user with key {key}.");
+                }
+            }
         }
 
+        /// <summary>
+        /// Provides a lazy connection to redis.
+        /// 
+        /// For more info see https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-dotnet-core-quickstart.
+        /// </summary>
+        private static Lazy<ConnectionMultiplexer> lazyConnection = new Lazy<ConnectionMultiplexer>(() =>
+        {
+            return ConnectionMultiplexer.Connect(redisUri);
+        });
+
+        /// <summary>
+        /// Provides a connection to redis.
+        /// 
+        /// For more info see https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-dotnet-core-quickstart.
+        /// </summary>
+        public static ConnectionMultiplexer Connection
+        {
+            get
+            {
+                return lazyConnection.Value;
+            }
+        }
     }
 }
