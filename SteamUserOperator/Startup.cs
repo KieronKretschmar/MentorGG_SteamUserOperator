@@ -27,6 +27,9 @@ namespace SteamUserOperator
         {
             services.AddControllers();
             services.AddLogging(x => x.AddConsole().AddDebug());
+
+            services.AddSingleton<IValveApi, ValveApi>();
+            services.AddSingleton<ISteamInfoRedis, SteamInfoRedis>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
