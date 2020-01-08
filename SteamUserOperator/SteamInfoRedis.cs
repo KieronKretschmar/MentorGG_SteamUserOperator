@@ -20,7 +20,7 @@ namespace SteamUserOperator
         private readonly ILogger<SteamInfoRedis> _logger;
         private static string redisUri;
         private readonly TimeSpan exipreAfter = TimeSpan.FromDays(14);
-        private IDatabase cache = lazyConnection.Value.GetDatabase();
+        private IDatabase cache;
 
         /// <summary>
         /// Communicates with the redis cache for SteamUsers.
@@ -33,6 +33,7 @@ namespace SteamUserOperator
         {
             _logger = logger;
             redisUri = configuration.GetValue<string>("REDIS_URI");
+            cache = lazyConnection.Value.GetDatabase();
         }
 
 
