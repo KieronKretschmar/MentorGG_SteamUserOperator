@@ -33,8 +33,6 @@ namespace SteamUserOperator
         {
             _logger = logger;
             redisUri = configuration.GetValue<string>("REDIS_URI");
-
-            throw new NotImplementedException();
         }
 
 
@@ -45,7 +43,21 @@ namespace SteamUserOperator
         /// <returns></returns>
         public async Task<List<SteamUser>> GetSteamUsers(List<long> steamIds)
         {
-            throw new NotImplementedException();
+            // Query Redis
+            var results = cache.StringGet(steamIds.Select(x => (RedisKey) x.ToString()).ToArray());
+
+            // Create a user for each non-empty value returned from redis
+            var users = new List<SteamUser>();
+            foreach (var item in results)
+            {
+                if (!item.IsNullOrEmpty)
+                {
+                    var user = JsonConvert.DeserializeObject<SteamUser>(item.ToString());
+                    users.Add(user);
+                }
+            }
+
+            return users;
         }
 
         /// <summary>
@@ -59,9 +71,10 @@ namespace SteamUserOperator
             {
                 var key = user.SteamId.ToString();
                 var value = JsonConvert.SerializeObject(user);
-                if(!cache.StringSet(key, value, expiry: exipreAfter))
+                if(!await cache.StringSetAsync(key, value, expiry: exipreAfter))
                 {
-                    _logger.LogError($"Could not set redis entry for user with key {key}.");
+                    _logger.LogError($"Could not set redis entry for user with key {key} and value {value}");
+                    continue;
                 }
             }
         }
