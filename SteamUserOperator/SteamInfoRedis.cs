@@ -25,7 +25,7 @@ namespace SteamUserOperator
         /// <summary>
         /// Communicates with the redis cache for SteamUsers.
         /// 
-        /// Requires environment variables: ["REDIS_URI"]
+        /// Requires environment variables: ["REDIS_URI", "EXPIRE_AFTER_DAYS"]
         /// </summary>
         /// <param name="logger"></param>
         /// <param name="configuration"></param>
@@ -33,6 +33,11 @@ namespace SteamUserOperator
         {
             _logger = logger;
             redisUri = configuration.GetValue<string>("REDIS_URI");
+
+            // Set expireAfter from env variable, if provided
+            var expireAfterDays = long.TryParse(configuration.GetValue<string>("EXPIRE_AFTER_DAYS"), out var expireAfterDaysFromEnv) ? expireAfterDaysFromEnv : 14;
+            expireAfter = TimeSpan.FromDays(expireAfterDays);
+
             cache = lazyConnection.Value.GetDatabase();
         }
 
