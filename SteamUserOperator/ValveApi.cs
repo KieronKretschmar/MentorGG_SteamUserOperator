@@ -94,7 +94,7 @@ namespace SteamUserOperator
                 // Extract data from json response
                 try
                 {
-                    var userInfosArray = (JArray)JObject.Parse(json)["players"];
+                    var userInfosArray = (JArray)JObject.Parse(json)["response"]["players"];
 
                     steamUsers = userInfosArray
                         .Select(x => new SteamUser
