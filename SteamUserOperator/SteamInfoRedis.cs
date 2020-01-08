@@ -19,7 +19,7 @@ namespace SteamUserOperator
     {
         private readonly ILogger<SteamInfoRedis> _logger;
         private static string redisUri;
-        private readonly TimeSpan exipreAfter = TimeSpan.FromDays(14);
+        private readonly TimeSpan expireAfter = TimeSpan.FromDays(14);
         private IDatabase cache;
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace SteamUserOperator
             {
                 var key = user.SteamId.ToString();
                 var value = JsonConvert.SerializeObject(user);
-                if(!await cache.StringSetAsync(key, value, expiry: exipreAfter))
+                if(!await cache.StringSetAsync(key, value, expiry: expireAfter))
                 {
                     _logger.LogError($"Could not set redis entry for user with key {key} and value {value}");
                     continue;
