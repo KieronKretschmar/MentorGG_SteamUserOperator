@@ -38,16 +38,6 @@ namespace SteamUserOperator
         }
 
         /// <summary>
-        /// Queries the Valve Api for a single user.
-        /// </summary>
-        /// <param name="steamId"></param>
-        /// <returns></returns>
-        public async Task<SteamUser> QueryUser(long steamId)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
         /// Queries the Valve Api for multiple users.
         /// This implementation is more efficient than querying 1-by-1.
         /// 
