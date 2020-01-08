@@ -11,7 +11,6 @@ namespace SteamUserOperator
 {
     public interface IValveApi
     {
-        Task<SteamUser> QueryUser(long steamId);
         Task<List<SteamUser>> QueryUsers(List<long> steamIds);
     }
 
@@ -35,16 +34,6 @@ namespace SteamUserOperator
             _logger = logger;
             Client = new HttpClient();
             apiKey = configuration.GetValue<string>("STEAM_API_KEY");
-        }
-
-        /// <summary>
-        /// Queries the Valve Api for a single user.
-        /// </summary>
-        /// <param name="steamId"></param>
-        /// <returns></returns>
-        public async Task<SteamUser> QueryUser(long steamId)
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>
