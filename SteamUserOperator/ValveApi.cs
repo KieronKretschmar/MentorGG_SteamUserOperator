@@ -18,7 +18,7 @@ namespace SteamUserOperator
     /// <summary>
     /// Communicates with Valve's data api.
     /// 
-    /// Requires environment variables: ["VALVE_API_KEY"]
+    /// Requires environment variables: ["STEAM_API_KEY"]
     /// </summary>
     public class ValveApi : IValveApi
     {
@@ -34,7 +34,7 @@ namespace SteamUserOperator
         {
             _logger = logger;
             Client = new HttpClient();
-            apiKey = configuration.GetValue<string>("VALVE_API_KEY");
+            apiKey = configuration.GetValue<string>("STEAM_API_KEY");
         }
 
         /// <summary>
