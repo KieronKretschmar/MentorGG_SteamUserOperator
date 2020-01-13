@@ -37,10 +37,14 @@ namespace SteamUserOperator.Controllers
         [HttpGet]
         public async Task<ActionResult<List<SteamUser>>> GetUsers(string steamIds)
         {
+            _logger.LogInformation($"Received GetUsers request for steamIds [ {steamIds} ]");
+
             // Parse steamIds
             var success = TryParseSteamIdsCsv(steamIds, out var steamIdsList);
             if (!success)
             {
+                _logger.LogInformation($"Could not parse steamIds [ {steamIds} ]. Returning 400.");
+
                 return BadRequest();
             }
 

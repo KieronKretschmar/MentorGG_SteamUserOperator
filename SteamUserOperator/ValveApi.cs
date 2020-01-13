@@ -75,7 +75,7 @@ namespace SteamUserOperator
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogError($"Valve Api returned Status {response.StatusCode} {response.ReasonPhrase} with content {response.Content}");
+                    _logger.LogError($"Valve Api returned Status [ {response.StatusCode} ] [ {response.ReasonPhrase} ] with content [ {response.Content} ]");
                 }
 
                 var json = await response.Content.ReadAsStringAsync();
@@ -97,7 +97,7 @@ namespace SteamUserOperator
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, $"Could not parse response from Valve Api. Json: {json}");
+                    _logger.LogError(e, $"Could not parse response from Valve Api. Json: [ {json} ]");
                     throw;
                 }
             }

@@ -65,6 +65,8 @@ namespace SteamUserOperator
                 }
             }
 
+            _logger.LogInformation($"Retrieved [ {users.Count} ] / [ {steamIds.Count} ] SteamUsers from redis.");
+
             return users;
         }
 
