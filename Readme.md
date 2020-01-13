@@ -2,7 +2,7 @@
 Provides data of Steam users like Steamname, Steamicon. Data is queried from [Steam Web Api](https://developer.valvesoftware.com/wiki/Steam_Web_API), particularly the [GetPlayerSummaries endpoint.](https://developer.valvesoftware.com/wiki/Steam_Web_API#GetPlayerSummaries_.28v0002.29)
 
 ## When is steam data updated?
-When steam data is requested for multiple users, all their data is updated if at least one of them can not be served from cache.
+When Steam data is requested for multiple users, all their data is updated if at least one of them can not be served from cache.
 Expiry date for redis is set to 14 days at default, but can be overwritten by setting the environment variable EXPIRE_AFTER_DAYS to the desired number of days (e.g. "7").
 
 ## Usage
