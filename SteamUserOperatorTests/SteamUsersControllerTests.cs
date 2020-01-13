@@ -55,7 +55,7 @@ namespace SteamUserOperatorTests
 
             // Create users
             var steamIds = SteamUserOperatorTestHelper.GetRealSteamIds();
-            var steamIdsCsv = String.Join(SteamUsersController.SEPERATOR, steamIds);
+            var steamIdsCsv = String.Join(SteamUsersController.Seperator, steamIds);
 
             // Call controller
             var response = await steamUsersController.GetUsers(steamIdsCsv);
@@ -101,7 +101,7 @@ namespace SteamUserOperatorTests
             var steamUsersController = new SteamUsersController(controllerLogMock, redisMock.Object, valveApiMock.Object);
 
             // Call GetUsers for all users
-            var steamIdsCsv = String.Join(SteamUsersController.SEPERATOR, steamIds);
+            var steamIdsCsv = String.Join(SteamUsersController.Seperator, steamIds);
             await steamUsersController.GetUsers(steamIdsCsv);
 
             // Verify that redis GetSteamUsers was called to attempt loading all users from cache

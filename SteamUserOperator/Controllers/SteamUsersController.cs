@@ -14,7 +14,7 @@ namespace SteamUserOperator.Controllers
     [ApiController]
     public class SteamUsersController : ControllerBase
     {
-        public const char SEPERATOR = ',';
+        public const char Seperator = ',';
         private readonly ILogger<SteamUsersController> _logger;
         private readonly ISteamInfoRedis _redis;
         private readonly IValveApi _valveApi;
@@ -72,7 +72,7 @@ namespace SteamUserOperator.Controllers
         private bool TryParseSteamIdsCsv(string steamIdsCsv, out List<long> steamIds)
         {
             steamIds = new List<long>();
-            foreach (var steamIdString in steamIdsCsv.Split(SEPERATOR))
+            foreach (var steamIdString in steamIdsCsv.Split(Seperator))
             {
                 var isSteamId = long.TryParse(steamIdString, out long steamId) && steamIdString.Length == 17;
                 if (isSteamId)

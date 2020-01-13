@@ -24,8 +24,8 @@ namespace SteamUserOperator
         private readonly ILogger<ValveApi> _logger;
         private HttpClient Client { get; }
         private readonly string apiKey;
-        private const int MAXSTEAMIDSPERQUERY = 100;
-        private const int MAXDAILYAPICALLS = 100000;
+        private const int MaxSteamIdsPerQuery = 100;
+        private const int MaxDailyApiCalls = 100000;
         private static int thisDay { get; set; } = DateTime.Now.Day;
         private static int callsThisDay { get; set; } = 0;
 
@@ -49,12 +49,12 @@ namespace SteamUserOperator
             List<SteamUser> steamUsers;
 
             // Split query into smaller chunks if it exceeds the max number of steamids per query 
-            if(steamIds.Count > MAXSTEAMIDSPERQUERY)
+            if(steamIds.Count > MaxSteamIdsPerQuery)
             {
                 // Split into chunks
                 var chunks = steamIds
                     .Select((x, i) => new { Index = i, Value = x })
-                    .GroupBy(x => x.Index / MAXSTEAMIDSPERQUERY)
+                    .GroupBy(x => x.Index / MaxSteamIdsPerQuery)
                     .Select(x => x.Select(v => v.Value).ToList())
                     .ToList();
 
@@ -111,19 +111,19 @@ namespace SteamUserOperator
             callsThisDay++;
 
             // Log if limit is reached
-            if (callsThisDay >= MAXDAILYAPICALLS)
+            if (callsThisDay >= MaxDailyApiCalls)
             {
-                _logger.LogError($"Reached limit for api calls {callsThisDay}/{MAXDAILYAPICALLS} at {24 - DateTime.Now.Hour} hours left today.");
+                _logger.LogError($"Reached limit for api calls {callsThisDay}/{MaxDailyApiCalls} at {24 - DateTime.Now.Hour} hours left today.");
             }
             
             // If this is the first call of a new day, update thisDay and log last days' calls.
             if (DateTime.Now.Day != thisDay)
             {
-                var msg = $"The Steam Api was called {callsThisDay}/{MAXDAILYAPICALLS} times today.";
+                var msg = $"The Steam Api was called {callsThisDay}/{MaxDailyApiCalls} times today.";
                 _logger.LogInformation(msg);
 
                 // Also log as warning if close to limit
-                if((double) callsThisDay / MAXDAILYAPICALLS > 0.75)
+                if((double) callsThisDay / MaxDailyApiCalls > 0.75)
                 {
                     _logger.LogWarning(msg);
                 }
