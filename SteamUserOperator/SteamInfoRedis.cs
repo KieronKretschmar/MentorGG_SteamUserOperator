@@ -35,8 +35,10 @@ namespace SteamUserOperator
             redisUri = configuration.GetValue<string>("REDIS_URI");
 
             // Set expireAfter from env variable, if provided
-            var expireAfterDays = long.TryParse(configuration.GetValue<string>("EXPIRE_AFTER_DAYS"), out var expireAfterDaysFromEnv) ? expireAfterDaysFromEnv : 14;
-            expireAfter = TimeSpan.FromDays(expireAfterDays);
+            if(long.TryParse(configuration.GetValue<string>("EXPIRE_AFTER_DAYS"), out var expireAfterDaysFromEnv))
+            {
+                expireAfter = TimeSpan.FromDays(expireAfterDaysFromEnv);
+            }
 
             cache = lazyConnection.Value.GetDatabase();
         }
