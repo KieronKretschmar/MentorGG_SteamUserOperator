@@ -79,7 +79,7 @@ namespace SteamUserOperator
                 var value = JsonConvert.SerializeObject(user);
                 if(!await cache.StringSetAsync(key, value, expiry: expireAfter))
                 {
-                    _logger.LogError($"Could not set redis entry for user with key {key} and value {value}");
+                    _logger.LogError($"Could not set redis entry for user with key [ {key} ] and value [ {value} ]");
                     continue;
                 }
             }
