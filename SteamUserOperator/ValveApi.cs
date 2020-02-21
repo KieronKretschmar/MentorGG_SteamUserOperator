@@ -23,17 +23,17 @@ namespace SteamUserOperator
     {
         private readonly ILogger<ValveApi> _logger;
         private HttpClient Client { get; }
-        private readonly string apiKey;
+        private readonly string _apiKey;
         private const int MaxSteamIdsPerQuery = 100;
         private const int MaxDailyApiCalls = 100000;
         private static int thisDay { get; set; } = DateTime.Now.Day;
         private static int callsThisDay { get; set; } = 0;
 
-        public ValveApi(ILogger<ValveApi> logger, IConfiguration configuration)
+        public ValveApi(ILogger<ValveApi> logger, string steamApiKey)
         {
             _logger = logger;
             Client = new HttpClient();
-            apiKey = configuration.GetValue<string>("STEAM_API_KEY");
+            _apiKey = steamApiKey;  
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace SteamUserOperator
             else
             {
                 // Query Api
-                var queryUrl = $"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={apiKey}&steamids={String.Join(',', steamIds)}";
+                var queryUrl = $"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={_apiKey}&steamids={String.Join(',', steamIds)}";
                 var response = await Client.GetAsync(queryUrl);
                 CountApiCall();
 

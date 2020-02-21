@@ -18,8 +18,8 @@ namespace SteamUserOperator
     public class SteamInfoRedis : ISteamInfoRedis
     {
         private readonly ILogger<SteamInfoRedis> _logger;
-        private static string redisUri;
-        private readonly TimeSpan expireAfter = TimeSpan.FromDays(14);
+        private static string _redisUri;
+        private readonly TimeSpan _expireAfter;
         private IDatabase cache;
 
         /// <summary>
@@ -29,17 +29,11 @@ namespace SteamUserOperator
         /// </summary>
         /// <param name="logger"></param>
         /// <param name="configuration"></param>
-        public SteamInfoRedis(ILogger<SteamInfoRedis> logger, IConfiguration configuration)
+        public SteamInfoRedis(ILogger<SteamInfoRedis> logger, string redisUri, long expireAfterDays)
         {
             _logger = logger;
-            redisUri = configuration.GetValue<string>("REDIS_URI");
-
-            // Set expireAfter from env variable, if provided
-            if(long.TryParse(configuration.GetValue<string>("EXPIRE_AFTER_DAYS"), out var expireAfterDaysFromEnv))
-            {
-                expireAfter = TimeSpan.FromDays(expireAfterDaysFromEnv);
-            }
-
+            _expireAfter = TimeSpan.FromDays(expireAfterDays);
+            _redisUri = redisUri;
             cache = lazyConnection.Value.GetDatabase();
         }
 
@@ -81,7 +75,7 @@ namespace SteamUserOperator
             {
                 var key = user.SteamId.ToString();
                 var value = JsonConvert.SerializeObject(user);
-                if(!await cache.StringSetAsync(key, value, expiry: expireAfter))
+                if(!await cache.StringSetAsync(key, value, expiry: _expireAfter))
                 {
                     _logger.LogError($"Could not set redis entry for user with key [ {key} ] and value [ {value} ]");
                     continue;
@@ -96,7 +90,7 @@ namespace SteamUserOperator
         /// </summary>
         private static Lazy<ConnectionMultiplexer> lazyConnection = new Lazy<ConnectionMultiplexer>(() =>
         {
-            return ConnectionMultiplexer.Connect(redisUri);
+            return ConnectionMultiplexer.Connect(_redisUri);
         });
 
         /// <summary>

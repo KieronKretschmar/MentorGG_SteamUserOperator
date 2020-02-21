@@ -14,14 +14,26 @@ namespace SteamUserOperatorTests
     [TestClass]
     public class SteamUsersControllerTests
     {
-        private readonly IConfigurationRoot config;
+        private readonly string STEAM_API_KEY;
+
+        public readonly string REDIS_URI;
+        public readonly long EXPIRE_AFTER_DAYS;
 
         public SteamUsersControllerTests()
         {
-
             var builder = new ConfigurationBuilder()
                 .AddEnvironmentVariables();
-            config = builder.Build();
+            var config = builder.Build();
+
+            STEAM_API_KEY = config.GetValue<string>("STEAM_API_KEY");
+            if (STEAM_API_KEY == null)
+                throw new ArgumentNullException("The environment variable STEAM_API_KEY has not been set. Use Package Manager console.");
+
+            REDIS_URI = config.GetValue<string>("REDIS_URI");
+            if (REDIS_URI == null)
+                throw new ArgumentNullException("The environment variable REDIS_URI has not been set. Use Package Manager console.");
+
+            EXPIRE_AFTER_DAYS = 1; // No need to load from environment in tests 
         }
 
         /// <summary>
@@ -167,13 +179,13 @@ namespace SteamUserOperatorTests
         private ValveApi GetValveApi()
         {
             var logMock = new Mock<ILogger<ValveApi>>().Object;
-            return new ValveApi(logMock, config);
+            return new ValveApi(logMock, STEAM_API_KEY);
         }
 
         private SteamInfoRedis GetSteamInfoRedis()
         {
             var logMock = new Mock<ILogger<SteamInfoRedis>>().Object;
-            return new SteamInfoRedis(logMock, config);
+            return new SteamInfoRedis(logMock, REDIS_URI, EXPIRE_AFTER_DAYS);
         }
     }
 }

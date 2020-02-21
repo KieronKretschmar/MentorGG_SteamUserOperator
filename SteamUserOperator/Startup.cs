@@ -28,8 +28,30 @@ namespace SteamUserOperator
             services.AddControllers();
             services.AddLogging(x => x.AddConsole().AddDebug());
 
-            services.AddSingleton<IValveApi, ValveApi>();
-            services.AddSingleton<ISteamInfoRedis, SteamInfoRedis>();
+            #region Read environment variables
+            var REDIS_URI = Configuration.GetValue<string>("REDIS_URI");
+            if(REDIS_URI == null)
+                throw new ArgumentNullException("The environment variable REDIS_URI has not been set.");
+
+            var STEAM_API_KEY = Configuration.GetValue<string>("STEAM_API_KEY");
+            if (STEAM_API_KEY == null)
+                throw new ArgumentNullException("The environment variable STEAM_API_KEY has not been set.");
+
+            // GetValue<long>() throws exception if env var is not configured correctly or not set.
+            var EXPIRE_AFTER_DAYS = Configuration.GetValue<long>("EXPIRE_AFTER_DAYS");
+            #endregion
+
+            #region Add services
+            services.AddSingleton<IValveApi, ValveApi>(services =>
+            {
+                return new ValveApi(services.GetService<ILogger<ValveApi>>(), STEAM_API_KEY);
+            });
+            services.AddSingleton<ISteamInfoRedis, SteamInfoRedis>(services =>
+            {
+                return new SteamInfoRedis(services.GetService<ILogger<SteamInfoRedis>>(), REDIS_URI, EXPIRE_AFTER_DAYS);
+            });
+            #endregion
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
