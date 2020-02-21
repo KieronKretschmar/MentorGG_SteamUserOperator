@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace SteamUserOperator.Controllers
 {
-    [Route("api/users")]
+    [Route("users")]
     [ApiController]
     public class SteamUsersController : ControllerBase
     {
