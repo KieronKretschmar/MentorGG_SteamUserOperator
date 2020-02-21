@@ -14,13 +14,21 @@ namespace SteamUserOperatorTests
     [TestClass]
     public class SteamInfoRedisTests
     {
-        private readonly IConfigurationRoot config;
+        public readonly string REDIS_URI;
+        public readonly long EXPIRE_AFTER_DAYS;
 
         public SteamInfoRedisTests()
         {
             var builder = new ConfigurationBuilder()
                 .AddEnvironmentVariables();
-            config = builder.Build();
+            var config = builder.Build();
+
+            REDIS_URI = config.GetValue<string>("REDIS_URI");
+            if (REDIS_URI == null)
+                throw new ArgumentNullException("The environment variable REDIS_URI has not been set. Use Package Manager console.");
+
+            EXPIRE_AFTER_DAYS = 1; // No need to load from environment in tests 
+
         }
 
         /// <summary>
@@ -31,7 +39,7 @@ namespace SteamUserOperatorTests
         public async Task SetAndGetUserInfos()
         {
             var logMock = new Mock<ILogger<SteamInfoRedis>>().Object;
-            var redis = new SteamInfoRedis(logMock, config);
+            var redis = new SteamInfoRedis(logMock, REDIS_URI, EXPIRE_AFTER_DAYS);
 
             // Create user with random properties
             // Note: The steamId does not belong to users and thus their cached data can be manipulated even 

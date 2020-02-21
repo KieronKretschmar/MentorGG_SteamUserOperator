@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using SteamUserOperator;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,13 +13,17 @@ namespace SteamUserOperatorTests
     [TestClass]
     public class ValveApiTests
     {
-        private readonly IConfigurationRoot config;
+        private readonly string STEAM_API_KEY;
 
         public ValveApiTests()
         {
             var builder = new ConfigurationBuilder()
                 .AddEnvironmentVariables();
-            config = builder.Build();
+            var config = builder.Build();
+
+            STEAM_API_KEY = config.GetValue<string>("STEAM_API_KEY");
+            if (STEAM_API_KEY == null)
+                throw new ArgumentNullException("The environment variable STEAM_API_KEY has not been set. Use Package Manager console.");
         }
 
         /// <summary>
@@ -66,7 +71,7 @@ namespace SteamUserOperatorTests
         private ValveApi GetValveApi()
         {
             var logMock = new Mock<ILogger<ValveApi>>().Object;
-            return new ValveApi(logMock, config);
+            return new ValveApi(logMock, STEAM_API_KEY);
         }
     }
 }
