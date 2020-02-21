@@ -1,5 +1,5 @@
 # SteamUserOperator
-Provides data of steam users like Steamname, Steamicon. Data is queried from [Steam Web Api](https://developer.valvesoftware.com/wiki/Steam_Web_API), particularly the [GetPlayerSummaries endpoint.](https://developer.valvesoftware.com/wiki/Steam_Web_API#GetPlayerSummaries_.28v0002.29)
+Provides data of Steam users like Steamname, Steamicon. Data is queried from [Steam Web Api](https://developer.valvesoftware.com/wiki/Steam_Web_API), particularly the [GetPlayerSummaries endpoint.](https://developer.valvesoftware.com/wiki/Steam_Web_API#GetPlayerSummaries_.28v0002.29)
 
 ## When is steam data updated?
 When steam data is requested for multiple users, all their data is updated if at least one of them can not be served from cache.
@@ -8,7 +8,6 @@ Expiry is defined by setting the environment variable EXPIRE_AFTER_DAYS to the d
 ## Usage
 Since usage of the Steam Web Api is limited to 100.000 daily calls some measures need to be taken:
 - Up to 100 users can be queried with a single API call, therefore querying multiple users at once is encouraged.
-
 
 ## Enviroment Variables
 - `STEAM_API_KEY` : 
