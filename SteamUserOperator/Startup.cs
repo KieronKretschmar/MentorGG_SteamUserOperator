@@ -37,7 +37,7 @@ namespace SteamUserOperator
             if (STEAM_API_KEY == null)
                 throw new ArgumentNullException("The environment variable STEAM_API_KEY has not been set.");
 
-            // GetValue<long>() throws exception if env var is not configured correctly
+            // GetValue<long>() throws exception if env var is not configured correctly or not set.
             var EXPIRE_AFTER_DAYS = Configuration.GetValue<long>("EXPIRE_AFTER_DAYS");
             #endregion
 
