@@ -69,7 +69,7 @@ namespace SteamUserOperator
             else
             {
                 // Query Api
-                var queryUrl = $"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={_apiKey}&steamids={String.Join(',', steamIds)}";
+                var queryUrl = $"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={_apiKey}&steamids={String.Join(',', steamIds)}";
                 var response = await Client.GetAsync(queryUrl);
                 CountApiCall();
 
