@@ -3,7 +3,7 @@ Provides data of steam users like Steamname, Steamicon. Data is queried from [St
 
 ## When is steam data updated?
 When steam data is requested for multiple users, all their data is updated if at least one of them can not be served from cache.
-Expiry date for redis is set to 14 days at default, but can be overwritten by setting the environment variable EXPIRE_AFTER_DAYS to the desired number of days (e.g. "7").
+Expiry is defined by setting the environment variable EXPIRE_AFTER_DAYS to the desired number of days (e.g. "7").
 
 ## Usage
 Since usage of the Steam Web Api is limited to 100.000 daily calls some measures need to be taken:
@@ -14,7 +14,7 @@ Since usage of the Steam Web Api is limited to 100.000 daily calls some measures
 - `STEAM_API_KEY` : 
 Steam API Key, required for [Steam Web Api](https://developer.valvesoftware.com/wiki/Steam_Web_API) [*]
 - `REDIS_URI` : URI to the redis cache for SteamUser data [*]
-- `EXPIRE_AFTER_DAYS` : Number of days after which redis entries created by SteamUserOperator expire
+- `EXPIRE_AFTER_DAYS` : Number of days after which redis entries created by SteamUserOperator expire [*]
 
 [*] *Required*
 
