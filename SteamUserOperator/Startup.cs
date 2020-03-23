@@ -26,7 +26,14 @@ namespace SteamUserOperator
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddLogging(x => x.AddConsole().AddDebug());
+            services.AddLogging(services =>
+            {
+                services.AddConsole(o =>
+                {
+                    o.TimestampFormat = "[yyyy-MM-dd HH:mm:ss zzz] ";
+                });
+                services.AddDebug();
+            });
 
             #region Read environment variables
             var REDIS_URI = Configuration.GetValue<string>("REDIS_URI");
