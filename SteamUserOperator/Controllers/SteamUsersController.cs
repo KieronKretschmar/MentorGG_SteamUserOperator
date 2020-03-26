@@ -30,7 +30,7 @@ namespace SteamUserOperator.Controllers
         /// Attempts to retrieve the users' infos from redis if available. If not, queries Valve's api instead and adds data to cache.
         /// This implementation is more efficient than querying 1-by-1.
         /// 
-        /// GET: api/SteamUsers?steamIds=XXXXXXXXXXXXXXXXX,XXXXXXXXXXXXXXXXX,XXXXXXXXXXXXXXXXX
+        /// GET: /users?steamIds=XXXXXXXXXXXXXXXXX,XXXXXXXXXXXXXXXXX,XXXXXXXXXXXXXXXXX
         /// </summary>
         /// <param name="steamIds">Multiple steamIds concatenated to a string, seperated by semicolons</param>
         /// <returns></returns>
