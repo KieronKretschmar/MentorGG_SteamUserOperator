@@ -59,6 +59,7 @@ namespace SteamUserOperator.Controllers
             // If all infos of all users were found in redis, return them directly
             if (steamUsers.Count == steamIdsList.Count + unknownIds.Count)
             {
+                _logger.LogInformation("Retrieved sufficient information from Redis, Returning cached data");
                 return steamUsers;
             }
 
