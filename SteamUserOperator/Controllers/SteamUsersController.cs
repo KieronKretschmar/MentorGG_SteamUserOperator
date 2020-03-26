@@ -108,12 +108,13 @@ namespace SteamUserOperator.Controllers
                 bool parseResult = long.TryParse(steamIdString, out long parsedValue);
                 if (parseResult)
                 {
-                    if (steamIdString.Length == 17)
+                    // Ensure the parsedValue is positive and the length is 17
+                    if (steamIdString.Length == 17 && parsedValue > 0)
                     {
                         steamIds.Add(parsedValue);
                     }   
                     else
-                    {
+                    {   
                         unknownIds.Add(parsedValue);
                     }
                 }
