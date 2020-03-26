@@ -40,11 +40,10 @@ namespace SteamUserOperator.Controllers
             _logger.LogInformation($"Received GetUsers request for steamIds [ {steamIds} ]");
 
             // Parse steamIds
-            var success = TryParseSteamIdsCsv(steamIds, out var steamIdsList);
+            var success = TryParseSteamIdsCsv(steamIds, out var steamIdsList, out var unknownIds);
             if (!success)
             {
                 _logger.LogInformation($"Could not parse steamIds [ {steamIds} ]. Returning 400.");
-
                 return BadRequest();
             }
 
@@ -53,7 +52,7 @@ namespace SteamUserOperator.Controllers
             var steamUsers = await _redis.GetSteamUsers(steamIdsList);
 
             // If all infos of all users were found in redis, return them directly
-            if (steamUsers.Count == steamIdsList.Count)
+            if (steamUsers.Count == steamIdsList.Count + unknownIds.Count)
             {
                 return steamUsers;
             }
@@ -64,8 +63,19 @@ namespace SteamUserOperator.Controllers
             // Insert into cache
             await _redis.SetSteamUsers(steamUsers);
 
+            // Make the assumption that all unknownIds are Bots
+            unknownSteamUsers = new List<SteamUser>();
+            foreach (var unknownId in unknownIds)
+            {
+                SteamUser newUser = new SteamUser();
+                newUser.SteamId = unknownId;
+                newUser.SteamName = "Bot";
+            }
+            steamUsers.AddRange(unknownSteamUsers);
+
             return steamUsers;
         }
+
 
         /// <summary>
         /// Tries to parse a string of steamIds seperated by SEPERATOR.
@@ -73,15 +83,23 @@ namespace SteamUserOperator.Controllers
         /// <param name="steamIdsCsv"></param>
         /// <param name="steamIds"></param>
         /// <returns></returns>
-        private bool TryParseSteamIdsCsv(string steamIdsCsv, out List<long> steamIds)
+        private bool TryParseSteamIdsCsv(string steamIdsCsv, out List<long> steamIds, out List<long> unknownIds)
         {
             steamIds = new List<long>();
+            unknownIds = new List<long>();
             foreach (var steamIdString in steamIdsCsv.Split(Seperator))
             {
-                var isSteamId = long.TryParse(steamIdString, out long steamId) && steamIdString.Length == 17;
-                if (isSteamId)
+                bool parseResult = long.TryParse(steamIdString, out long parsedValue);
+                if (parseResult)
                 {
-                    steamIds.Add(steamId);
+                    if (steamIdString.Length == 17)
+                    {
+                        steamIds.Add(parsedValue);
+                    }   
+                    else
+                    {
+                        unknownIds.Add(parsedValue);
+                    }
                 }
                 else
                 {
