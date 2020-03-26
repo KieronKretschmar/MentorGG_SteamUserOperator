@@ -70,16 +70,26 @@ namespace SteamUserOperator.Controllers
             await _redis.SetSteamUsers(steamUsers);
 
             // Make the assumption that all unknownIds are Bots
-            var unknownSteamUsers = new List<SteamUser>();
-            foreach (var unknownId in unknownIds)
-            {
-                SteamUser newUser = new SteamUser();
-                newUser.SteamId = unknownId;
-                newUser.SteamName = "Bot";
-            }
+            var unknownSteamUsers = CreateBotUsers(unknownIds);
             steamUsers.AddRange(unknownSteamUsers);
 
             return steamUsers;
+        }
+
+        /// <summary>
+        /// Creates a list of SteamUsers for Bots.
+        /// </summary>
+        private List<SteamUser> CreateBotUsers(List<long> ids)
+        {
+            var botUsers = new List<SteamUser>();
+            foreach (var id in ids)
+            {
+                SteamUser botUser = new SteamUser();
+                botUser.SteamId = id;
+                botUser.SteamName = "Bot";
+                botUsers.Add(botUser);
+            }
+            return botUsers;
         }
 
 
