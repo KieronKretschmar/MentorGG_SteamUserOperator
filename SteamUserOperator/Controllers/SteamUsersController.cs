@@ -37,6 +37,11 @@ namespace SteamUserOperator.Controllers
         [HttpGet]
         public async Task<ActionResult<List<SteamUser>>> GetUsers(string steamIds)
         {
+            if (steamIds == null)
+            {
+                return BadRequest("SteamIds must not equal null");
+            }
+
             _logger.LogInformation($"Received GetUsers request for steamIds [ {steamIds} ]");
 
             // Parse steamIds
