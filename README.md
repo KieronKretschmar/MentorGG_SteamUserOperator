@@ -12,7 +12,7 @@ Since usage of the Steam Web Api is limited to 100.000 daily calls some measures
 ## Enviroment Variables
 - `STEAM_API_KEY` : 
 Steam API Key, required for [Steam Web Api](https://developer.valvesoftware.com/wiki/Steam_Web_API) [*]
-- `REDIS_URI` : URI to the redis cache for SteamUser data [*]
+- `REDIS_CONFIGURATION_STRING` : Configuration string for the redis cache for SteamUser data [*]
 - `EXPIRE_AFTER_DAYS` : Number of days after which redis entries created by SteamUserOperator expire [*]
 
 [*] *Required*

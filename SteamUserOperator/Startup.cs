@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
 
 namespace SteamUserOperator
 {
@@ -36,10 +37,6 @@ namespace SteamUserOperator
             });
 
             #region Read environment variables
-            var REDIS_URI = Configuration.GetValue<string>("REDIS_URI");
-            if(REDIS_URI == null)
-                throw new ArgumentNullException("The environment variable REDIS_URI has not been set.");
-
             var STEAM_API_KEY = Configuration.GetValue<string>("STEAM_API_KEY");
             if (STEAM_API_KEY == null)
                 throw new ArgumentNullException("The environment variable STEAM_API_KEY has not been set.");
@@ -53,9 +50,17 @@ namespace SteamUserOperator
             {
                 return new ValveApi(services.GetService<ILogger<ValveApi>>(), STEAM_API_KEY);
             });
-            services.AddSingleton<ISteamInfoRedis, SteamInfoRedis>(services =>
+            #endregion
+
+
+            #region Redis
+            var REDIS_CONFIGURATION_STRING = Configuration.GetValue<string>("REDIS_CONFIGURATION_STRING");
+            // Add ConnectionMultiplexer as singleton as it is made to be reused
+            // see https://stackexchange.github.io/StackExchange.Redis/Basics.html
+            services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(REDIS_CONFIGURATION_STRING));
+            services.AddTransient<ISteamInfoRedis, SteamInfoRedis>(services =>
             {
-                return new SteamInfoRedis(services.GetService<ILogger<SteamInfoRedis>>(), REDIS_URI, EXPIRE_AFTER_DAYS);
+                return new SteamInfoRedis(services.GetService<ILogger<SteamInfoRedis>>(), services.GetRequiredService<IConnectionMultiplexer>(), EXPIRE_AFTER_DAYS);
             });
             #endregion
 
