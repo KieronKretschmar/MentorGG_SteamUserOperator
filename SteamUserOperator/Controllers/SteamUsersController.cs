@@ -84,6 +84,12 @@ namespace SteamUserOperator.Controllers
             var botUsers = new List<SteamUser>();
             foreach (var id in ids)
             {
+                // Log when the the value NOT is negative as Bots should always have negative SteamId values.
+                if (id > 0)
+                {
+                    _logger.LogWarning($"Received a positive value when creating Bot Users! Id [ {id} ]");
+                }
+
                 SteamUser botUser = new SteamUser();
                 botUser.SteamId = id;
                 botUser.SteamName = "Bot";
