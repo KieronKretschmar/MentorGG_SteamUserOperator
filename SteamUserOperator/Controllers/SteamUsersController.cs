@@ -30,21 +30,25 @@ namespace SteamUserOperator.Controllers
         /// Attempts to retrieve the users' infos from redis if available. If not, queries Valve's api instead and adds data to cache.
         /// This implementation is more efficient than querying 1-by-1.
         /// 
-        /// GET: api/SteamUsers?steamIds=XXXXXXXXXXXXXXXXX,XXXXXXXXXXXXXXXXX,XXXXXXXXXXXXXXXXX
+        /// GET: /users?steamIds=XXXXXXXXXXXXXXXXX,XXXXXXXXXXXXXXXXX,XXXXXXXXXXXXXXXXX
         /// </summary>
         /// <param name="steamIds">Multiple steamIds concatenated to a string, seperated by semicolons</param>
         /// <returns></returns>
         [HttpGet]
         public async Task<ActionResult<List<SteamUser>>> GetUsers(string steamIds)
         {
+            if (steamIds == null)
+            {
+                return BadRequest("SteamIds must not equal null");
+            }
+
             _logger.LogInformation($"Received GetUsers request for steamIds [ {steamIds} ]");
 
             // Parse steamIds
-            var success = TryParseSteamIdsCsv(steamIds, out var steamIdsList);
+            var success = TryParseSteamIdsCsv(steamIds, out var steamIdsList, out var unknownIds);
             if (!success)
             {
                 _logger.LogInformation($"Could not parse steamIds [ {steamIds} ]. Returning 400.");
-
                 return BadRequest();
             }
 
@@ -53,8 +57,9 @@ namespace SteamUserOperator.Controllers
             var steamUsers = await _redis.GetSteamUsers(steamIdsList);
 
             // If all infos of all users were found in redis, return them directly
-            if (steamUsers.Count == steamIdsList.Count)
+            if (steamUsers.Count == steamIdsList.Count + unknownIds.Count)
             {
+                _logger.LogInformation("Retrieved sufficient information from Redis, Returning cached data");
                 return steamUsers;
             }
 
@@ -64,8 +69,35 @@ namespace SteamUserOperator.Controllers
             // Insert into cache
             await _redis.SetSteamUsers(steamUsers);
 
+            // Make the assumption that all unknownIds are Bots
+            var unknownSteamUsers = CreateBotUsers(unknownIds);
+            steamUsers.AddRange(unknownSteamUsers);
+
             return steamUsers;
         }
+
+        /// <summary>
+        /// Creates a list of SteamUsers for Bots.
+        /// </summary>
+        private List<SteamUser> CreateBotUsers(List<long> ids)
+        {
+            var botUsers = new List<SteamUser>();
+            foreach (var id in ids)
+            {
+                // Log when the the value NOT is negative as Bots should always have negative SteamId values.
+                if (id > 0)
+                {
+                    _logger.LogWarning($"Received a positive value when creating Bot Users! Id [ {id} ]");
+                }
+
+                SteamUser botUser = new SteamUser();
+                botUser.SteamId = id;
+                botUser.SteamName = "Bot";
+                botUsers.Add(botUser);
+            }
+            return botUsers;
+        }
+
 
         /// <summary>
         /// Tries to parse a string of steamIds seperated by SEPERATOR.
@@ -73,15 +105,24 @@ namespace SteamUserOperator.Controllers
         /// <param name="steamIdsCsv"></param>
         /// <param name="steamIds"></param>
         /// <returns></returns>
-        private bool TryParseSteamIdsCsv(string steamIdsCsv, out List<long> steamIds)
+        private bool TryParseSteamIdsCsv(string steamIdsCsv, out List<long> steamIds, out List<long> unknownIds)
         {
             steamIds = new List<long>();
+            unknownIds = new List<long>();
             foreach (var steamIdString in steamIdsCsv.Split(Seperator))
             {
-                var isSteamId = long.TryParse(steamIdString, out long steamId) && steamIdString.Length == 17;
-                if (isSteamId)
+                bool parseResult = long.TryParse(steamIdString, out long parsedValue);
+                if (parseResult)
                 {
-                    steamIds.Add(steamId);
+                    // Ensure the parsedValue is positive and the length is 17
+                    if (steamIdString.Length == 17 && parsedValue > 0)
+                    {
+                        steamIds.Add(parsedValue);
+                    }   
+                    else
+                    {   
+                        unknownIds.Add(parsedValue);
+                    }
                 }
                 else
                 {
