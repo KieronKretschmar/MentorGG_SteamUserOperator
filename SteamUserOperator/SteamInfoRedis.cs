@@ -18,23 +18,19 @@ namespace SteamUserOperator
     public class SteamInfoRedis : ISteamInfoRedis
     {
         private readonly ILogger<SteamInfoRedis> _logger;
-        private static string _redisUri;
         private readonly TimeSpan _expireAfter;
         private IDatabase cache;
 
         /// <summary>
         /// Communicates with the redis cache for SteamUsers.
-        /// 
-        /// Requires environment variables: ["REDIS_URI", "EXPIRE_AFTER_DAYS"]
         /// </summary>
         /// <param name="logger"></param>
         /// <param name="configuration"></param>
-        public SteamInfoRedis(ILogger<SteamInfoRedis> logger, string redisUri, long expireAfterDays)
+        public SteamInfoRedis(ILogger<SteamInfoRedis> logger, IConnectionMultiplexer connectionMultiplexer, long expireAfterDays)
         {
             _logger = logger;
             _expireAfter = TimeSpan.FromDays(expireAfterDays);
-            _redisUri = redisUri;
-            cache = lazyConnection.Value.GetDatabase();
+            cache = connectionMultiplexer.GetDatabase();
         }
 
 
@@ -80,29 +76,6 @@ namespace SteamUserOperator
                     _logger.LogError($"Could not set redis entry for user with key [ {key} ] and value [ {value} ]");
                     continue;
                 }
-            }
-        }
-
-        /// <summary>
-        /// Provides a lazy connection to redis.
-        /// 
-        /// For more info see https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-dotnet-core-quickstart.
-        /// </summary>
-        private static Lazy<ConnectionMultiplexer> lazyConnection = new Lazy<ConnectionMultiplexer>(() =>
-        {
-            return ConnectionMultiplexer.Connect(_redisUri);
-        });
-
-        /// <summary>
-        /// Provides a connection to redis.
-        /// 
-        /// For more info see https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-dotnet-core-quickstart.
-        /// </summary>
-        public static ConnectionMultiplexer Connection
-        {
-            get
-            {
-                return lazyConnection.Value;
             }
         }
     }
