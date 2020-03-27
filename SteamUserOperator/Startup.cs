@@ -35,26 +35,19 @@ namespace SteamUserOperator
                 });
                 services.AddDebug();
             });
-
-            #region Read environment variables
-            var STEAM_API_KEY = Configuration.GetValue<string>("STEAM_API_KEY");
-            if (STEAM_API_KEY == null)
-                throw new ArgumentNullException("The environment variable STEAM_API_KEY has not been set.");
-
-            // GetValue<long>() throws exception if env var is not configured correctly or not set.
-            var EXPIRE_AFTER_DAYS = Configuration.GetValue<long>("EXPIRE_AFTER_DAYS");
-            #endregion
-
-            #region Add services
+            
+            #region Valve API
+            var STEAM_API_KEY = GetRequiredEnvironmentVariable<string>(Configuration, "STEAM_API_KEY");
             services.AddSingleton<IValveApi, ValveApi>(services =>
             {
                 return new ValveApi(services.GetService<ILogger<ValveApi>>(), STEAM_API_KEY);
             });
             #endregion
 
-
             #region Redis
-            var REDIS_CONFIGURATION_STRING = Configuration.GetValue<string>("REDIS_CONFIGURATION_STRING");
+            var REDIS_CONFIGURATION_STRING = GetRequiredEnvironmentVariable<string>(Configuration, "REDIS_CONFIGURATION_STRING");
+            var EXPIRE_AFTER_DAYS = GetRequiredEnvironmentVariable<long>(Configuration, "EXPIRE_AFTER_DAYS");
+
             // Add ConnectionMultiplexer as singleton as it is made to be reused
             // see https://stackexchange.github.io/StackExchange.Redis/Basics.html
             services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(REDIS_CONFIGURATION_STRING));
@@ -63,7 +56,6 @@ namespace SteamUserOperator
                 return new SteamInfoRedis(services.GetService<ILogger<SteamInfoRedis>>(), services.GetRequiredService<IConnectionMultiplexer>(), EXPIRE_AFTER_DAYS);
             });
             #endregion
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -84,6 +76,47 @@ namespace SteamUserOperator
             {
                 endpoints.MapControllers();
             });
+        }
+
+
+
+        /// <summary>
+        /// Attempt to retrieve an Environment Variable
+        /// Throws ArgumentNullException is not found.
+        /// </summary>
+        /// <typeparam name="T">Type to retreive</typeparam>
+        private static T GetRequiredEnvironmentVariable<T>(IConfiguration config, string key)
+        {
+            T value = config.GetValue<T>(key);
+            if (value == null)
+            {
+                throw new ArgumentNullException(
+                    $"{key} is missing, Configure the `{key}` environment variable.");
+            }
+            else
+            {
+                return value;
+            }
+        }
+
+        /// <summary>
+        /// Attempt to retrieve an Environment Variable
+        /// Returns default value if not found.
+        /// </summary>
+        /// <typeparam name="T">Type to retreive</typeparam>
+        private static T GetOptionalEnvironmentVariable<T>(IConfiguration config, string key, T defaultValue)
+        {
+            var stringValue = config.GetSection(key).Value;
+            try
+            {
+                T value = (T)Convert.ChangeType(stringValue, typeof(T), System.Globalization.CultureInfo.InvariantCulture);
+                return value;
+            }
+            catch (InvalidCastException e)
+            {
+                Console.WriteLine($"Env var [ {key} ] not specified. Defaulting to [ {defaultValue} ]");
+                return defaultValue;
+            }
         }
     }
 }
