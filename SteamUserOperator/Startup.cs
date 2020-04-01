@@ -53,7 +53,10 @@ namespace SteamUserOperator
             services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(REDIS_CONFIGURATION_STRING));
             services.AddScoped<ISteamInfoRedis, SteamInfoRedis>(services =>
             {
-                return new SteamInfoRedis(services.GetService<ILogger<SteamInfoRedis>>(), services.GetRequiredService<IConnectionMultiplexer>(), EXPIRE_AFTER_DAYS);
+                return new SteamInfoRedis(
+				services.GetService<ILogger<SteamInfoRedis>>(),
+				services.GetRequiredService<IConnectionMultiplexer>(),
+				EXPIRE_AFTER_DAYS);
             });
             #endregion
         }
