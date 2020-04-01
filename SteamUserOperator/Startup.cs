@@ -51,9 +51,12 @@ namespace SteamUserOperator
             // Add ConnectionMultiplexer as singleton as it is made to be reused
             // see https://stackexchange.github.io/StackExchange.Redis/Basics.html
             services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(REDIS_CONFIGURATION_STRING));
-            services.AddTransient<ISteamInfoRedis, SteamInfoRedis>(services =>
+            services.AddScoped<ISteamInfoRedis, SteamInfoRedis>(services =>
             {
-                return new SteamInfoRedis(services.GetService<ILogger<SteamInfoRedis>>(), services.GetRequiredService<IConnectionMultiplexer>(), EXPIRE_AFTER_DAYS);
+                return new SteamInfoRedis(
+				services.GetService<ILogger<SteamInfoRedis>>(),
+				services.GetRequiredService<IConnectionMultiplexer>(),
+				EXPIRE_AFTER_DAYS);
             });
             #endregion
         }

@@ -42,7 +42,8 @@ namespace SteamUserOperator
         public async Task<List<SteamUser>> GetSteamUsers(List<long> steamIds)
         {
             // Query Redis
-            var results = cache.StringGet(steamIds.Select(x => (RedisKey) x.ToString()).ToArray());
+            var results = await cache.StringGetAsync(
+			    steamIds.Select(x => (RedisKey) x.ToString()).ToArray());
 
             // Create a user for each non-empty value returned from redis
             var users = new List<SteamUser>();
