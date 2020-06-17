@@ -35,7 +35,7 @@ namespace SteamUserOperator.Controllers
         /// <param name="steamIds">Multiple steamIds concatenated to a string, seperated by semicolons</param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult<List<SteamUser>>> GetUsers(string steamIds)
+        public async Task<ActionResult<List<SteamUser>>> GetUsers(string steamIds, bool forceRefresh=false)
         {
             if (steamIds == null)
             {
@@ -52,19 +52,22 @@ namespace SteamUserOperator.Controllers
                 return BadRequest();
             }
 
-            // Get cached userinfos from redis
-            // Note: Simply checking whether the users are cached and only then querying them might be more performant
-            var steamUsers = await _redis.GetSteamUsers(steamIdsList);
-
-            // If all infos of all users were found in redis, return them directly
-            if (steamUsers.Count == steamIdsList.Count + unknownIds.Count)
+            // Attempt to return cached userinfos from redis if refresh is not forced
+            if(forceRefresh == false)
             {
-                _logger.LogInformation("Retrieved sufficient information from Redis, Returning cached data");
-                return steamUsers;
+                // Note: Simply checking whether the users are cached and only then querying them might be more performant
+                var cachedSteamUsers = await _redis.GetSteamUsers(steamIdsList);
+
+                // If all infos of all users were found in redis, return them directly
+                if (cachedSteamUsers.Count == steamIdsList.Count + unknownIds.Count)
+                {
+                    _logger.LogInformation("Retrieved sufficient information from Redis, Returning cached data");
+                    return cachedSteamUsers;
+                }
             }
 
             // Query Valve API Refresh all users
-            steamUsers = await _valveApi.QueryUsers(steamIdsList);
+            var steamUsers = await _valveApi.QueryUsers(steamIdsList);
 
             // Insert into cache
             await _redis.SetSteamUsers(steamUsers);
