@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
+using StackExchange.Redis;
 using SteamUserOperator;
 using System;
 using System.Collections.Generic;
@@ -39,7 +40,7 @@ namespace SteamUserOperatorTests
         public async Task SetAndGetUserInfos()
         {
             var logMock = new Mock<ILogger<SteamInfoRedis>>().Object;
-            var redis = new SteamInfoRedis(logMock, REDIS_URI, EXPIRE_AFTER_DAYS);
+            var redis = new SteamInfoRedis(logMock, ConnectionMultiplexer.Connect(REDIS_URI), EXPIRE_AFTER_DAYS);
 
             // Create user with random properties
             // Note: The steamId does not belong to users and thus their cached data can be manipulated even 
