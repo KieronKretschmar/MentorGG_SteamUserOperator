@@ -64,7 +64,6 @@ namespace SteamUserOperator
                 {
                     steamUsers.AddRange(await QueryUsers(chunk));
                 }
-                return steamUsers;
             }
             else
             {
@@ -93,7 +92,6 @@ namespace SteamUserOperator
                             SteamName = x["personaname"].ToObject<string>()
                         })
                         .ToList();
-                    return steamUsers;
                 }
                 catch (Exception e)
                 {
@@ -101,6 +99,13 @@ namespace SteamUserOperator
                     throw;
                 }
             }
+
+            // Fill non-existing users with dummy data, happens e.g. when a steamaccount has been deleted
+            var missingUsers = steamIds.Except(steamUsers.Select(x => x.SteamId))
+                .Select(x => new SteamUser { SteamId = x, ImageUrl = "", SteamName = x.ToString() });
+            steamUsers.AddRange(missingUsers);
+
+            return steamUsers;
         }
 
         /// <summary>
