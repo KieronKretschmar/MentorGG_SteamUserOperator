@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using StackExchange.Redis;
 using SteamUserOperator;
 using SteamUserOperator.Controllers;
 using System;
@@ -185,7 +186,7 @@ namespace SteamUserOperatorTests
         private SteamInfoRedis GetSteamInfoRedis()
         {
             var logMock = new Mock<ILogger<SteamInfoRedis>>().Object;
-            return new SteamInfoRedis(logMock, REDIS_URI, EXPIRE_AFTER_DAYS);
+            return new SteamInfoRedis(logMock, ConnectionMultiplexer.Connect(REDIS_URI), EXPIRE_AFTER_DAYS);
         }
     }
 }
